@@ -22,7 +22,7 @@ output_dim = 1
 num_layers = 2
 
 model = LSTMModel(input_dim, hidden_dim, output_dim, num_layers)
-model.load_state_dict(torch.load("C:/Users/Manikandan/Desktop/class/applications of ai/assignment 5/best_model_3_features.pth"))
+model.load_state_dict(torch.load("best_model_3_features.pth"))
 model.eval()
 
 # Streamlit App
