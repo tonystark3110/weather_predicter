@@ -1,7 +1,12 @@
+
+
+
+
 import streamlit as st
 import torch
 import numpy as np
 from torch import nn
+import joblib
 
 # Define the LSTM Model
 class LSTMModel(nn.Module):
@@ -16,14 +21,17 @@ class LSTMModel(nn.Module):
         return output
 
 # Load the trained model
-input_dim = 3
+input_dim = 3  # Match the input features used during training
 hidden_dim = 64
 output_dim = 1
 num_layers = 2
 
 model = LSTMModel(input_dim, hidden_dim, output_dim, num_layers)
-model.load_state_dict(torch.load("best_model_3_features.pth"))
+model.load_state_dict(torch.load("C:/Users/Manikandan/Desktop/class/applications of ai/assignment 5/best_model_3_features.pth"))
 model.eval()
+
+# Load the updated scaler for 3 features
+scaler = joblib.load("C:/Users/Manikandan/Desktop/class/applications of ai/assignment 5/scaler_3_features.pkl")
 
 # Streamlit App
 st.title("Temperature Prediction App")
@@ -44,12 +52,23 @@ if st.button("Predict"):
         if len(temp_list) != 24 or len(humidity_list) != 24 or len(wind_speed_list) != 24:
             st.error("Please provide exactly 24 values for each feature.")
         else:
-            # Prepare input tensor
-            input_data = np.array([temp_list, humidity_list, wind_speed_list]).T.reshape(1, -1, 3)
-            input_tensor = torch.tensor(input_data, dtype=torch.float32)
+            # Prepare input data
+            input_data = np.array([temp_list, humidity_list, wind_speed_list]).T
+            
+            # Normalize inputs
+            input_data_normalized = scaler.transform(input_data)
+            
+            # Prepare tensor for prediction
+            input_tensor = torch.tensor(input_data_normalized.reshape(1, -1, 3), dtype=torch.float32)
 
             # Make prediction
-            prediction = model(input_tensor).item()
-            st.success(f"Predicted Temperature: {round(prediction, 2)}°C")
+            predicted_temperature_normalized = model(input_tensor).item()
+
+            # Denormalize the predicted temperature
+            predicted_temperature = scaler.inverse_transform(
+                [[predicted_temperature_normalized, 0, 0]]  # 0s for dummy features
+            )[0][0]
+
+            st.success(f"Predicted Temperature: {round(predicted_temperature, 2)}°C")
     except Exception as e:
         st.error(f"Error: {e}")
