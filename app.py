@@ -36,6 +36,7 @@ scaler = joblib.load("scaler_3_features.pkl")
 # Streamlit App
 st.title("Temperature Prediction App")
 st.write("Predict the next hour's temperature based on 24 hours of weather data.")
+st.write("By Manikandan Meenakshi Sundaram")
 
 # User Input
 temperature_input = st.text_area("Enter 24 temperature values (comma-separated):")
